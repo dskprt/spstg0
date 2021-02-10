@@ -1,4 +1,4 @@
-package org.example.game.util;
+package com.github.dskprt.spstg0.util;
 
 public enum GameState {
 

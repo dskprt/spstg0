@@ -1,4 +1,4 @@
-package org.example.game.input;
+package com.github.dskprt.spstg0.input;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;

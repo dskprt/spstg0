@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.example</groupId>
-    <artifactId>game</artifactId>
+    <groupId>com.github.dskprt</groupId>
+    <artifactId>spstg0</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
@@ -21,7 +21,7 @@
                     <archive>
                         <manifest>
                             <!-- TODO change this -->
-                            <mainClass>org.example.game.main.Main</mainClass>
+                            <mainClass>com.github.dskprt.spstg0.main.Main</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

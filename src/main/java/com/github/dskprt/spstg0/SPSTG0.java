@@ -1,25 +1,23 @@
-package org.example.game;
+package com.github.dskprt.spstg0;
 
-import org.example.game.input.Keyboard;
-import org.example.game.input.Mouse;
-import org.example.game.util.GameState;
-import org.example.game.util.Timer;
+import com.github.dskprt.spstg0.input.Keyboard;
+import com.github.dskprt.spstg0.input.Mouse;
+import com.github.dskprt.spstg0.util.GameState;
+import com.github.dskprt.spstg0.util.Timer;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.awt.font.FontRenderContext;
 import java.awt.image.BufferStrategy;
 import java.awt.image.VolatileImage;
 import java.io.IOException;
 import java.util.Properties;
 
-public class Game {
+public class SPSTG0 {
 
-    public static Game INSTANCE;
+    public static SPSTG0 INSTANCE;
 
     public final Properties gameInfo;
 
@@ -36,7 +34,7 @@ public class Game {
     private int x = 50;
     private int y = 50;
 
-    public Game() {
+    public SPSTG0() {
         INSTANCE = this;
 
         gameInfo = new Properties();
