@@ -1,5 +1,7 @@
 package com.github.dskprt.spstg0;
 
+import com.github.dskprt.spstg0.gui.Screen;
+import com.github.dskprt.spstg0.gui.screens.MainMenuScreen;
 import com.github.dskprt.spstg0.input.Keyboard;
 import com.github.dskprt.spstg0.input.Mouse;
 import com.github.dskprt.spstg0.util.GameState;
@@ -17,34 +19,40 @@ import java.util.Properties;
 
 public class SPSTG0 {
 
-    public static SPSTG0 INSTANCE;
+    public static int width;
+    public static int height;
+    public static int scaleFactor;
 
-    public final Properties gameInfo;
+    public static Properties gameInfo;
 
-    public final JFrame frame;
-    public final Canvas canvas;
+    public static JFrame frame;
+    public static Canvas canvas;
 
-    private Graphics g = null;
-    private Graphics2D g2d = null;
-    public Font font;
+    private static Graphics g = null;
+    private static Graphics2D g2d = null;
 
-    public GameState state;
-    public Timer timer;
+    public static Font font;
+    public static FontMetrics fontMetrics;
 
-    private int x = 50;
-    private int y = 50;
+    public static GameState state;
+    public static Timer timer;
 
-    public SPSTG0() {
-        INSTANCE = this;
+    private static Screen screen;
 
+    public static void init() {
         gameInfo = new Properties();
 
         try {
-            gameInfo.load(this.getClass().getResourceAsStream("/game.properties"));
+            gameInfo.load(SPSTG0.class.getResourceAsStream("/game.properties"));
         } catch(IOException e) {
             e.printStackTrace();
             System.exit(-1);
         }
+
+        width = Integer.parseInt((String) gameInfo.get("game_width"));
+        height = Integer.parseInt((String) gameInfo.get("game_height"));
+
+        scaleFactor = Integer.parseInt((String) gameInfo.get("window_width")) / width;
 
         frame = new JFrame((String) gameInfo.get("window_title"));
         frame.setIgnoreRepaint(true);
@@ -74,7 +82,7 @@ public class SPSTG0 {
         canvas.addMouseMotionListener(m);
     }
 
-    public void run() {
+    public static void run() {
         frame.setVisible(true);
 
         canvas.createBufferStrategy(2);
@@ -84,13 +92,15 @@ public class SPSTG0 {
         GraphicsDevice gd = ge.getDefaultScreenDevice();
         GraphicsConfiguration gc = gd.getDefaultConfiguration();
 
-        VolatileImage img = gc.createCompatibleVolatileImage(canvas.getWidth(), canvas.getHeight());
+        VolatileImage img = gc.createCompatibleVolatileImage(width, height);
 
         timer = new Timer();
         state = GameState.RUNNING;
 
+        setScreen(new MainMenuScreen());
+
         try {
-            font = Font.createFont(Font.TRUETYPE_FONT, this.getClass().getResourceAsStream("/assets/fonts/04B_03.ttf")).deriveFont(16f);
+            font = Font.createFont(Font.TRUETYPE_FONT, SPSTG0.class.getResourceAsStream("/assets/fonts/04B_03.ttf")).deriveFont(8f);
         } catch(FontFormatException | IOException e) {
             e.printStackTrace();
         }
@@ -100,17 +110,12 @@ public class SPSTG0 {
 
             try {
                 if(img.validate(gc) == VolatileImage.IMAGE_INCOMPATIBLE) {
-                    img = gc.createCompatibleVolatileImage(canvas.getWidth(), canvas.getHeight());
+                    img = gc.createCompatibleVolatileImage(width, height);
                 }
 
                 g2d = img.createGraphics();
-
-                g2d.setColor(Color.BLACK);
-                g2d.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-
                 g2d.setFont(font);
 
-                // TODO change this to your liking
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
                 g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
                 g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
@@ -118,6 +123,8 @@ public class SPSTG0 {
                 render(g2d);
 
                 g = buffer.getDrawGraphics();
+
+                g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
                 g.drawImage(img, 0, 0, canvas.getWidth(), canvas.getHeight(), null);
 
                 if(!buffer.contentsLost()) buffer.show();
@@ -133,45 +140,41 @@ public class SPSTG0 {
         System.exit(0);
     }
 
-    private void update(double delta) {
+    private static void update(double delta) {
         timer.tick();
 
         Keyboard.poll();
         Mouse.poll();
 
-        // TODO update your game here (world, player etc.)
-        if(Keyboard.isKeyDown(KeyEvent.VK_UP)) {
-            y -= delta * 0.2;
-        }
-
-        if(Keyboard.isKeyDown(KeyEvent.VK_DOWN)) {
-            y += delta * 0.2;
-        }
-
-        if(Keyboard.isKeyDown(KeyEvent.VK_LEFT)) {
-            x -= delta * 0.2;
-        }
-
-        if(Keyboard.isKeyDown(KeyEvent.VK_RIGHT)) {
-            x += delta * 0.2;
-        }
+        if(screen != null) screen.update(delta);
     }
 
-    private void render(Graphics2D g2d) {
-        // TODO place all of your rendering logic here
+    private static void render(Graphics2D g2d) {
+        if(fontMetrics == null) fontMetrics = g2d.getFontMetrics();
+
+        g2d.setColor(Color.BLACK);
+        g2d.fillRect(0, 0, width, height);
+
+        if(screen != null) screen.render(g2d);
+
         g2d.setColor(Color.GREEN);
-        g2d.drawString(String.format("FPS: %s", timer.getFps()), 5, 5 + 16);
+        g2d.drawString(String.format("FPS: %s", timer.getFps()), 5, 5 + 8);
         g2d.drawString(String.format("Mouse[x=%s,y=%s] Button0=%s, Button1=%s, Button2=%s",
                 Mouse.getPosition().x, Mouse.getPosition().y, Mouse.isButtonDown(Mouse.Button.LEFT),
-                Mouse.isButtonDown(Mouse.Button.MIDDLE), Mouse.isButtonDown(Mouse.Button.RIGHT)), 5, 5 + (16 * 2) + 2);
-
-        g2d.setColor(Color.WHITE);
-        g2d.drawString("Hello world!", x, y);
+                Mouse.isButtonDown(Mouse.Button.MIDDLE), Mouse.isButtonDown(Mouse.Button.RIGHT)), 5, 5 + (8 * 2) + 2);
     }
 
-    private void shutdown() {
+    private static void shutdown() {
         System.out.println("Shutting down.");
 
         // TODO place all of your shutdown logic here
+    }
+
+    public static Screen getScreen() {
+        return screen;
+    }
+
+    public static void setScreen(Screen screen) {
+        SPSTG0.screen = screen;
     }
 }

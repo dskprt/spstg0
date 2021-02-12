@@ -5,6 +5,7 @@ import com.github.dskprt.spstg0.SPSTG0;
 public class Main {
 
     public static void main(String[] args) {
-        new SPSTG0().run();
+        SPSTG0.init();
+        SPSTG0.run();
     }
 }
